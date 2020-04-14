@@ -1,16 +1,16 @@
 import numpy as np
-import random
 from collections import defaultdict as dd
 
-def dice_roll(n):
+def dice_roll(n,add = 0):
   '''
-  Returns n dice rolls in order
+  Returns n sorted dice rolls 
   '''
-  results = []
-  for j in range(n):
-    results.append(random.randint(1,6))
- 
-  return np.array(sorted(results,reverse = True))
+  results = np.random.randint(5,size = n) +1 + add
+  results = np.array(sorted(results,reverse=True))
+
+  return results
+
+
 
 
 def roll(ad,dd):
@@ -18,8 +18,9 @@ def roll(ad,dd):
   Simulates risk attack with ad attackers and dd defenders
   '''
   size = min(ad,dd)
+  # returns size best rolls for each side
   attack_roll = dice_roll(ad)[:size]
-  defense_roll = dice_roll(dd)[:size] +0.1
+  defense_roll = dice_roll(dd,0.01)[:size]
 
   return np.sign(attack_roll - defense_roll)
 
@@ -68,27 +69,28 @@ def full_attack(a,d):
   return a,d 
 
 def simulate_attacks(a,d,n=1000):
-
+  a,d = int(a),int(d)
   awins,dwins = [],[]
   for i in range(n):
     s = full_attack(a,d)
     awins.append(s[0])
     dwins.append(s[1])
 
-  awins = np.array(awins)
-  dwins = np.array(dwins) 
-  awins = awins[awins>0]
-  aprob = len(awins)/n
-  avg_a = awins.mean()
-  
-  dwins = dwins[dwins>0]
-  dprob = len(dwins)/n
-  avg_d = dwins.mean()
-  print(aprob,dprob)
-  print(avg_a,avg_d)
-  
+  for wins in [awins,dwins]:
+    res = analysis(wins)
+    print(res)
   
 
+def analysis(wins):
+  n = len(wins)
+  wins = np.array(wins)
+  wins = wins[wins>0]
+  prob = len(wins)/float(n)
+  avg = wins.mean()
+  std = wins.std()
+  return prob,avg,std
 
-results = simulate_attacks(140,100)
+a = input('attack?')
+d = input('defense?')
+results = simulate_attacks(a,d)
 
